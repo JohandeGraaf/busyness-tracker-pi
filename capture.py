@@ -46,6 +46,10 @@ def check_connection(conn_if_name):
     subprocess.run(['sudo', 'wpa_supplicant', '-B', '-c', '/etc/wpa_supplicant/wpa_supplicant.conf', '-i', conn_if_name])
     time.sleep(2)
     subprocess.run(['sudo', 'wpa_cli', '-i', conn_if_name, 'reconfigure'])
+    time.sleep(5)
+    subprocess.run(['sudo', 'dhclient', '-v', conn_if_name])
+    time.sleep(5)
+    subprocess.run(['sudo', 'dhclient', '-v', '-r', conn_if_name])
     time.sleep(10)
 
     return is_connected()
@@ -218,4 +222,4 @@ def kismet_get_devices():
     return devices
 
 if __name__ == '__main__':
-    main("pi1", "https://api_url/", "9c:ef:d5:fd:8d:eb", "7c:dd:90:90:1b:ae")
+    main("pi1", "https://busyness-tracker.appspot.com/upload.php", "9c:ef:d5:fd:8d:eb", "7c:dd:90:90:1b:ae")
