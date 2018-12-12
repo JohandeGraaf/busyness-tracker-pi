@@ -8,10 +8,10 @@ import functools
 from urllib.request import urlopen
 from urllib.error import URLError
 
-import click
 import netifaces
 import requests
 import KismetRest
+
 
 kismet_uri = 'http://localhost:2501'
 
@@ -50,23 +50,26 @@ def check_connection(conn_if_name):
 
     return is_connected()
 
+def wf(txt):
+    try:
+        with open("/home/pi/Pi/output.txt", "a", encoding="utf-8") as f:
+            f.write(txt + "\n")
+    except Exception as e:
+        print(e)
 
-@click.command()
-@click.option('--dev_name', help='Device name')
-@click.option('--api_url', help='API url to post captured data')
-@click.option('--capture_mac', help='mac of capture card')
-@click.option('--conn_mac', help='mac of card used to connect to wifi')
+
+
 def main(dev_name, api_url, capture_mac, conn_mac):
     tries = 0
     while True:
-        print('Starting...')
+        wf('Starting...')
         subprocess.run(['killall', 'kismet'])
-        time.sleep(10)
+        time.sleep(20)
         subprocess.run(['killall', '-s', 'SIGKILL', 'kismet'])
-        time.sleep(2)
+        time.sleep(10)
         tries += 1
 
-        print('\nSetup networking...')
+        wf('\nSetup networking...')
         capture_if_name = None
         conn_if_name = None
 
@@ -80,27 +83,29 @@ def main(dev_name, api_url, capture_mac, conn_mac):
                 conn_if_name = ifc
 
         if(capture_if_name is None):
+            wf("Capture if not found")
             raise Exception("Capture if not found")
         
         if(conn_if_name is None):
+            wf("Connect if not found")
             raise Exception("Connect if not found")
 
-        print('Capture interface: {}'.format(capture_if_name))
-        print('Connect interface: {}'.format(conn_if_name))
+        wf('Capture interface: {}'.format(capture_if_name))
+        wf('Connect interface: {}'.format(conn_if_name))
 
-        print('\nStarting kismet...')
+        wf('\nStarting kismet...')
         command = ['bash', '-c', 'cd ~;kismet_server -c {} --daemonize'.format(capture_if_name)]
-        print('Run command: ' + ' '.join(command))
+        wf('Run command: ' + ' '.join(command))
         subprocess.run(command)
 
         if not check_kismet_running():
             if tries > 5:
                 break
 
-            print('Kismet not running, retrying... (try {} of {})\n\n'.format(tries, 5))
+            wf('Kismet not running, retrying... (try {} of {})\n\n'.format(tries, 5))
             continue
 
-        print('Kismet is running')
+        wf('Kismet is running')
 
         while True:
             connected = check_connection(conn_if_name)
@@ -112,24 +117,28 @@ def main(dev_name, api_url, capture_mac, conn_mac):
                     'devices': kismet_get_devices()
                 }
 
-                print("sending data..")
+                wf("sending data..")
 
                 if(connected):
+                    wf("Connected")
                     try:
                         url = api_url
                         response = requests.post(url, json=data)
-                        print(response)
-                    except Exception as e: 
-                        print(e)
-                else: 
+                        wf("Data sent, response:")
+                        wf(str(response))
+                    except Exception as e:
+                        wf("Exception:")
+                        wf(str(e))
+                else:
+                    wf("Not connected") 
                     print(data)
 
-                print("Waiting 5 mins...")
+                wf("Waiting 5 mins...")
                 time.sleep(300)
             except KismetRest.KismetRequestException as e:
                 break
 
-        print('\n\nExeption raised.. restarting kismet...\n\n')
+        wf('\n\nExeption raised.. restarting kismet...\n\n')
 
 
 def kismet_output_filter(kismet_output, epoch_time):
@@ -209,4 +218,4 @@ def kismet_get_devices():
     return devices
 
 if __name__ == '__main__':
-    main()
+    main("pi1", "https://api_url/", "9c:ef:d5:fd:8d:eb", "7c:dd:90:90:1b:ae")
