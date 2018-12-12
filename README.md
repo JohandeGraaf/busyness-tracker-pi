@@ -24,8 +24,8 @@ Reboot
 
 ## Install dependencies
 ```
-sudo apt-get install build-essential git libmicrohttpd-dev zlib1g-dev libnl-3-dev libnl-genl-3-dev libcap-dev libpcap-dev libncurses5-dev libnm-dev libdw-dev libsqlite3-dev pkg-config libprotobuf-dev libprotobuf-c-dev protobuf-compiler protobuf-c-compiler libsensors4-dev python python3 python-setuptools python-protobuf python-requests g++ libusb-1.0
-pip3 install click netifaces requests urllib2
+sudo apt-get install build-essential git libmicrohttpd-dev zlib1g-dev libnl-3-dev libnl-genl-3-dev libcap-dev libpcap-dev libncurses5-dev libnm-dev libdw-dev libsqlite3-dev pkg-config libprotobuf-dev libprotobuf-c-dev protobuf-compiler protobuf-c-compiler libsensors4-dev python python3 python-setuptools python-protobuf python-requests g++ libusb-1.0 rng-tools
+pip3 install click netifaces requests
 ```
 
 ## Install kismet
@@ -47,9 +47,24 @@ Create wpa_supplicant.conf in /etc/wpa_supplicant/wpa_supplicant.conf
 wpa_passphrase "<SSID>" "<PASSWORD>" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf
 ```
 
+## Install busyness-tracker
+```
+cd /home/pi
+mkdir Pi
+git clone https://github.com/JohandeGraaf/busyness-tracker-pi.git
+```
+Put correct details in capture.py, line:
+```
+main("pi1", "https://api_url/", "9c:ef:d5:fd:8d:eb", "7c:dd:90:90:1b:ae")
+```
+
 ## Start capture.py
 ```
-python3 capture.py --dev_name "pi1" --api_url "https://apiurl.com/" --capture_mac "9c:ef:d5:fd:8d:eb" --conn_mac "7c:dd:90:90:1b:ae"
+python3 capture.py
+```
+or add line in /etc/rc.local:
+```
+python3 /home/pi/Pi/capture.py 2>&1 &
 ```
 
 ## Structure of JSON send to api_url
