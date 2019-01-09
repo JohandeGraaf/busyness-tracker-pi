@@ -62,7 +62,7 @@ main("pi1", "https://api_url/", "9c:ef:d5:fd:8d:eb", "7c:dd:90:90:1b:ae")
 ```
 python3 capture.py
 ```
-or add line in /etc/rc.local:
+To start script at boot add following line in /etc/rc.local:
 ```
 python3 /home/pi/Pi/capture.py 2>&1 &
 ```
